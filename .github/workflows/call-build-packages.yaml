@@ -20,6 +20,17 @@ on:
         description: The optional source code branch to use for building against.
         type: string
         required: false
+      runs-on-build:
+        description: The build runner label to use to execute the build matrix on.
+        type: string
+        default: "ubuntu-latest"
+        required: false
+      runs-on-package:
+        description: The build runner label to use to execute the repository packaging on.
+        type: string
+        # Need to use 18.04 as 20.04 has no createrepo available
+        default: "ubuntu-18.04"
+        required: false
     secrets:
       token:
         description: The Github token or similar to authenticate with.
@@ -41,7 +52,7 @@ jobs:
   call-build-packages:
     name: ${{ matrix.distro }} package build and stage to S3
     environment: ${{ inputs.environment }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs-on-build }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(inputs.build_matrix) }}
@@ -143,7 +154,7 @@ jobs:
     # Only upload for staging
     if: ${{ inputs.environment == 'staging' }}
     # Need to use 18.04 as 20.04 has no createrepo available
-    runs-on: ubuntu-18.04
+    runs-on: ${{ inputs.runs-on-package }}
     environment: ${{ inputs.environment }}
     needs: call-build-packages
     steps:

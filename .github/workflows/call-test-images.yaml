@@ -23,6 +23,11 @@ on:
         description: The Github environment to run this workflow on.
         type: string
         required: false
+      runs-on:
+        description: The runner to use for this workflow.
+        type: string
+        default: "ubuntu-latest"
+        required: false
     secrets:
       token:
         description: The Github token or similar to authenticate with for the registry.
@@ -34,7 +39,7 @@ jobs:
   call-test-images-cosign-verify:
     name: Cosign verification of container image
     environment: ${{ inputs.environment }}
-    runs-on: [ ubuntu-latest ]
+    runs-on: ${{ inputs.runs-on }}
     steps:
       - name: Install cosign
         uses: sigstore/cosign-installer@main
@@ -64,7 +69,7 @@ jobs:
 
   call-test-images-container-architecture:
     name: ${{ matrix.arch }} image architecture verification
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs-on }}
     environment: ${{ inputs.environment }}
     # Test as much as we can
     continue-on-error: true
@@ -115,7 +120,7 @@ jobs:
   call-test-images-container-smoke:
     # Ensure each architecture container runs up correctly with default configuration.
     name: ${{ matrix.arch }} smoke test for local container images
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs-on }}
     environment: ${{ inputs.environment }}
     # No point running if the architecture is incorrect
     needs: [ call-test-images-container-architecture ]
@@ -167,7 +172,7 @@ jobs:
     # Testing helm chart deployment on KIND here.
     name: Helm chart test on KIND
     environment: ${{ inputs.environment }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs-on }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2

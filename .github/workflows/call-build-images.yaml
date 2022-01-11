@@ -24,6 +24,11 @@ on:
         description: The Github environment to run this workflow on.
         type: string
         required: false
+      runs-on:
+        description: The runner to use for this workflow.
+        type: string
+        default: "ubuntu-latest"
+        required: false
     secrets:
       token:
         description: The Github token or similar to authenticate with for the registry.
@@ -37,7 +42,7 @@ on:
 jobs:
   call-build-images-matrix:
     name: ${{ matrix.arch }} container image stage to GHCR
-    runs-on: [ ubuntu-latest ]
+    runs-on: ${{ inputs.runs-on }}
     environment: ${{ inputs.environment }}
     strategy:
       fail-fast: false
@@ -91,7 +96,7 @@ jobs:
 
   call-build-images-debug:
     name: Build the single-arch debug image
-    runs-on: [ ubuntu-latest ]
+    runs-on: ${{ inputs.runs-on }}
     environment: ${{ inputs.environment }}
     needs: call-build-images-matrix
     steps:
@@ -132,7 +137,7 @@ jobs:
 
   call-build-images-multiarch:
     name: Multiarch container images stage to GHCR
-    runs-on: [ ubuntu-latest ]
+    runs-on: ${{ inputs.runs-on }}
     environment: ${{ inputs.environment }}
     steps:
       - name: Checkout code
@@ -205,7 +210,7 @@ jobs:
 
   call-build-images-scan:
     name: Trivy + Dockle image scan
-    runs-on: [ ubuntu-latest ]
+    runs-on: ${{ inputs.runs-on }}
     environment: ${{ inputs.environment }}
     needs: call-build-images-matrix
     strategy:
@@ -228,7 +233,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    runs-on: [ ubuntu-latest ]
+    runs-on: ${{ inputs.runs-on }}
     environment: ${{ inputs.environment }}
     needs: call-build-images-matrix
     steps:
@@ -274,7 +279,7 @@ jobs:
       # This is used to complete the identity challenge
       # with sigstore/fulcio when running outside of PRs.
       id-token: write
-    runs-on: [ ubuntu-latest ]
+    runs-on: ${{ inputs.runs-on }}
     environment: ${{ inputs.environment }}
     needs: call-build-images-push-manifests
     steps:
